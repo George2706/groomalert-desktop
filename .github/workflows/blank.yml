@@ -1,39 +1,31 @@
-name: Build GroomAlert Safe Browser (Windows)
+name: Build GroomAlert Desktop (Windows)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
 
 jobs:
-  build-windows:
+  build_windows:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
       - name: Install dependencies
-        run: npm install
+        working-directory: desktop-app
+        run: npm ci
 
-      - name: Build Electron app (Windows)
+      - name: Build Windows installer
+        working-directory: desktop-app
         run: npm run build:win
 
-      - name: Find built exe
-        shell: pwsh
-        run: |
-          $exe = Get-ChildItem -Path . -Recurse -Filter *.exe | Where-Object { $_.FullName -notmatch '\\node_modules\\' } | Select-Object -First 1
-          if (-not $exe) { throw "No .exe found after build" }
-          Write-Host "FOUND_EXE=$($exe.FullName)"
-          "FOUND_EXE=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
-
-      - name: Upload Windows executable
+      - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
           name: groomalert-desktop-win
-          path: ${{ env.FOUND_EXE }}
+          path: desktop-app/dist/*.exe
