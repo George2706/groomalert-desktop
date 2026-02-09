@@ -19,16 +19,21 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        working-directory: groomalert-desktop
         run: npm install
 
       - name: Build Electron app (Windows)
-        working-directory: groomalert-desktop
         run: npm run build:win
+
+      - name: Find built exe
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path . -Recurse -Filter *.exe | Where-Object { $_.FullName -notmatch '\\node_modules\\' } | Select-Object -First 1
+          if (-not $exe) { throw "No .exe found after build" }
+          Write-Host "FOUND_EXE=$($exe.FullName)"
+          "FOUND_EXE=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Upload Windows executable
         uses: actions/upload-artifact@v4
         with:
           name: groomalert-desktop-win
-          path: |
-            groomalert-desktop/dist/*.exe
+          path: ${{ env.FOUND_EXE }}
