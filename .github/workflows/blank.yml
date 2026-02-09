@@ -19,9 +19,11 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
+        working-directory: groomalert-desktop
         run: npm install
 
       - name: Build Electron app (Windows)
+        working-directory: groomalert-desktop
         run: npm run build:win
 
       - name: Upload Windows executable
@@ -29,4 +31,4 @@ jobs:
         with:
           name: groomalert-desktop-win
           path: |
-            dist/*.exe
+            groomalert-desktop/dist/*.exe
